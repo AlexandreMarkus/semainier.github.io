@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base href="/semainier.github.io/">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Menu de la semaine à partir des circulaires">
+
+  <!-- Unconditional, and not part of the splash block below: this tag used to
+       arrive only because flutter_native_splash injected it. Without it a
+       mobile browser lays the page out at a 980px viewport and scales it
+       down, so the whole app renders tiny. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Semainier">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>Semainier</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+    // Reload when WebKit restores the page from the back/forward cache instead
+    // of resuming it. WebKit restores a Flutter app with its frame scheduling
+    // broken: input and script keep running, but scheduled frames never
+    // render, so the app silently freezes at its last painted state.
+    //
+    // In a packaged (Pyodide) app, Python state lives in the page and is lost
+    // on reload - but WebKit's alternative is an app frozen at its last
+    // painted frame, so a fresh start is still strictly better. Gated to
+    // WebKit (every browser on iOS, Safari on macOS) because other engines
+    // restore correctly and get to keep their state.
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted &&
+        navigator.vendor && navigator.vendor.startsWith('Apple')) {
+        window.location.reload();
+      }
+    });
+  </script>
+
+  <script>
+    var flet = {
+      pyodide: true,
+      noCdn: false,
+      webSocketEndpoint: "/ws",
+      entrypointBaseUrl: "/semainier.github.io/",
+      assetBase: "/semainier.github.io/",
+      routeUrlStrategy: "hash",
+      // Only pinned when bundling. Left null, Flutter resolves CanvasKit from
+      // gstatic and the Noto fallback fonts from Google Fonts, and the build
+      // skips shipping local copies. A host serving its own runtime can assign
+      // these without also claiming a no-CDN build.
+      canvasKitBaseUrl: null,
+      // .mjs is required: python-worker.js is a module worker and loads
+      // the runtime via dynamic `import()`. Pyodide >= 0.29 also refuses
+      // to run in classic workers. Use the local copy that `flet build`
+      // drops into web/pyodide/ when --no-cdn is set; otherwise pull
+      // from jsdelivr so the build artifact can stay slim.
+      pyodideUrl: "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs",
+      pythonModuleName: "main",
+      webRenderer: "canvaskit",
+      // "assets/fonts/" is the bundled Noto Emoji; null pulls it from Google Fonts.
+      fontFallbackBaseUrl: null,
+      appPackageUrl: "assets/app/app.zip"
+    }
+
+    flet.flutterAppLoaded = new Promise((resolve) => {
+      flet.flutterAppResolve = resolve;
+    });
+
+    flet.flutterAppLoaded.then((flutterApp) => {
+      console.log("Flutter app loaded");
+    });
+  </script>
+
+  <!-- fletAppConfig -->
+
+  <script src="python.js"></script>
+
+  <style id="splash-screen-style">
+    html {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      background-color: #ffffff;
+      background-size: 100% 100%;
+    }
+
+    .center {
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #222222;
+      }
+    }
+  </style>
+  <script id="splash-screen-script">
+    function removeSplashFromWeb() {
+      document.getElementById("splash")?.remove();
+      document.getElementById("splash-branding")?.remove();
+      document.body.style.background = "transparent";
+    }
+  </script>
+</head>
+
+<body>
+  <picture id="splash">
+    <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
+    <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
+    <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
+  </picture>
+  <script src="flutter_bootstrap.js" async></script>
+
+<script>
+(function () {
+  var KEY = "semainier-notify";
+  var LATER = "semainier-ask";
+  var LANG = (navigator.language || "fr").slice(0, 2).toLowerCase();
+  var TEXT = {
+    fr: {
+      title: "Rappel du jeudi",
+      body: "Activez les notifications pour recevoir un rappel chaque jeudi et planifier les repas.",
+      yes: "Activer les notifications",
+      no: "Plus tard",
+      ios: "Sur iPhone, installez d'abord l'app sur l'écran d'accueil, puis rouvrez-la pour activer le rappel.",
+      noapi: "Ce navigateur ne peut pas afficher de notifications.",
+      denied: "Les notifications sont bloquées dans le navigateur.",
+      ready: "Vos recettes de la semaine sont prêtes.",
+      set: "C'est activé. Le jeudi, un rappel vous invitera à planifier les repas."
+    },
+    en: {
+      title: "Thursday reminder",
+      body: "Turn on notifications to get a reminder every Thursday to plan your meals.",
+      yes: "Turn on notifications",
+      no: "Not now",
+      ios: "On iPhone, add the app to your home screen first, then open it again to turn on the reminder.",
+      noapi: "This browser cannot show notifications.",
+      denied: "Notifications are blocked in the browser.",
+      ready: "This week's recipes are ready.",
+      set: "It's on. On Thursday, a reminder will ask you to plan the meals."
+    },
+    es: {
+      title: "Aviso del jueves",
+      body: "Active las notificaciones para recibir un aviso cada jueves y planear las comidas.",
+      yes: "Activar notificaciones",
+      no: "Ahora no",
+      ios: "En iPhone, instale primero la app en la pantalla de inicio y ábrala de nuevo para activar el aviso.",
+      noapi: "Este navegador no puede mostrar notificaciones.",
+      denied: "Las notificaciones están bloqueadas en el navegador.",
+      ready: "Las recetas de la semana están listas.",
+      set: "Listo. El jueves, un aviso le pedirá planear las comidas."
+    }
+  };
+  function copy() { return TEXT[LANG] || TEXT.en; }
+  function thursdayNote() {
+    if (localStorage.getItem(KEY) !== "1") return;
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    var now = new Date();
+    if (now.getDay() !== 4) return;
+    var stamp = "semainier-noted-" + now.toISOString().slice(0, 10);
+    if (localStorage.getItem(stamp)) return;
+    localStorage.setItem(stamp, "1");
+    new Notification("Semainier", { body: copy().ready });
+  }
+  function shouldAsk() {
+    if (!("Notification" in window)) return true;
+    if (Notification.permission === "granted" && localStorage.getItem(KEY) === "1") return false;
+    if (Notification.permission === "denied") return false;
+    var until = Number(localStorage.getItem(LATER) || 0);
+    return Date.now() > until;
+  }
+  var panel;
+  function close() {
+    if (panel && panel.parentNode) panel.parentNode.removeChild(panel);
+    panel = null;
+  }
+  function ask() {
+    if (!shouldAsk()) return;
+    close();
+    var words = copy();
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    var installed = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+    panel = document.createElement("div");
+    panel.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(28,25,21,.45);display:flex;align-items:center;justify-content:center;padding:20px;";
+    var card = document.createElement("div");
+    card.style.cssText = "width:min(440px,100%);background:#fffdf8;color:#1c1915;border-radius:20px;padding:22px;box-shadow:0 18px 50px rgba(28,25,21,.28);font-family:sans-serif;";
+    var title = document.createElement("div");
+    title.textContent = words.title;
+    title.style.cssText = "font:600 22px/1.2 sans-serif;margin-bottom:8px;";
+    var body = document.createElement("p");
+    body.textContent = ios && !installed ? words.ios : (!("Notification" in window) ? words.noapi : words.body);
+    body.style.cssText = "margin:0 0 18px;font-size:16px;line-height:1.4;color:#5c564c;";
+    var yes = document.createElement("button");
+    yes.type = "button";
+    yes.textContent = words.yes;
+    yes.style.cssText = "width:100%;border:0;border-radius:999px;padding:14px 16px;background:#1e4d3a;color:#fffdf8;font:600 15px/1 sans-serif;cursor:pointer;";
+    var no = document.createElement("button");
+    no.type = "button";
+    no.textContent = words.no;
+    no.style.cssText = "width:100%;margin-top:8px;border:0;background:transparent;color:#5c564c;font:600 14px/1 sans-serif;padding:10px;cursor:pointer;";
+    yes.addEventListener("click", function () {
+      if (ios && !installed) return;
+      if (!("Notification" in window)) return;
+      Notification.requestPermission().then(function (perm) {
+        if (perm === "granted") {
+          localStorage.setItem(KEY, "1");
+          localStorage.removeItem(LATER);
+          close();
+          new Notification("Semainier", { body: copy().set });
+        } else {
+          body.textContent = words.denied;
+        }
+      });
+    });
+    no.addEventListener("click", function () {
+      localStorage.setItem(LATER, String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      close();
+    });
+    card.appendChild(title);
+    card.appendChild(body);
+    if (!(ios && !installed) && ("Notification" in window)) card.appendChild(yes);
+    card.appendChild(no);
+    panel.appendChild(card);
+    document.body.appendChild(panel);
+  }
+  try {
+    var channel = new BroadcastChannel("semainier-lang");
+    channel.onmessage = function (event) {
+      if (typeof event.data === "string" && event.data) {
+        LANG = event.data.slice(0, 2).toLowerCase();
+        if (panel) ask();
+      }
+    };
+  } catch (error) {}
+  function start() { thursdayNote(); ask(); }
+  if (document.body) start();
+  else document.addEventListener("DOMContentLoaded", start);
+})();
+</script>
+
+</body>
+
+</html>
